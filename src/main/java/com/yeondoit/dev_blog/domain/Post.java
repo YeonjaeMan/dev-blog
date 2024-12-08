@@ -1,5 +1,6 @@
 package com.yeondoit.dev_blog.domain;
 
+import com.yeondoit.dev_blog.dto.PostDTO;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -42,6 +43,8 @@ public class Post {
     @Column(name = "category", nullable = false)
     private Category category;
 
+    @ElementCollection
+    @CollectionTable(name = "tb_post_tags", joinColumns = @JoinColumn(name = "post_id"))
     @Enumerated(EnumType.STRING)
     @Column(name = "tag")
     private List<String> tags;
@@ -49,4 +52,36 @@ public class Post {
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
     private PostStatus status;
+
+    // DTO로 변환하는 메서드
+    public PostDTO toDTO() {
+        return new PostDTO(
+                this.id,
+                this.title,
+                this.content,
+                this.author,
+                this.createdDate,
+                this.modifiedDate,
+                this.views,
+                this.category,
+                this.tags,
+                this.status
+        );
+    }
+
+    // DTO에서 엔티티로 변환하는 메서드
+    public static Post fromDTO(PostDTO postDTO) {
+        return new Post(
+                postDTO.getId(),
+                postDTO.getTitle(),
+                postDTO.getContent(),
+                postDTO.getAuthor(),
+                postDTO.getCreatedDate(),
+                postDTO.getModifiedDate(),
+                postDTO.getViews(),
+                postDTO.getCategory(),
+                postDTO.getTags(),
+                postDTO.getStatus()
+        );
+    }
 }
