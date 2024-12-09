@@ -1,5 +1,6 @@
 package com.yeondoit.dev_blog.controller;
 
+import com.yeondoit.dev_blog.domain.Category;
 import com.yeondoit.dev_blog.domain.Post;
 import com.yeondoit.dev_blog.dto.PostDTO;
 import com.yeondoit.dev_blog.service.PostService;
@@ -9,6 +10,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 
 @Controller
@@ -27,12 +29,17 @@ public class PostController {
 
     @GetMapping("/new")
     public String createPostForm(Model model) {
-        model.addAttribute("post", new Post());
+        model.addAttribute("post", new PostDTO());
+        model.addAttribute("categories", Category.values());
         return "post_form";
     }
 
     @PostMapping
     public String savePost(@ModelAttribute PostDTO postDTO) {
+        if (postDTO.getTags() != null) {
+            List<String> tags = Arrays.asList(postDTO.getTags().toString().split(","));
+            postDTO.setTags(tags);
+        }
         postDTO.setCreatedDate(LocalDateTime.now());
         postDTO.setModifiedDate(LocalDateTime.now());
         Post post = Post.fromDTO(postDTO);
@@ -53,11 +60,13 @@ public class PostController {
         Post post = postService.findById(id);
         PostDTO postDTO = post.toDTO();
         model.addAttribute("post", postDTO);
+        model.addAttribute("categories", Category.values());
         return "post_form";
     }
 
     @PostMapping("/update")
     public String updatePost(@ModelAttribute PostDTO postDTO) {
+        postDTO.setCreatedDate(postService.findById(postDTO.getId()).getCreatedDate());
         postDTO.setModifiedDate(LocalDateTime.now());
         Post post = Post.fromDTO(postDTO);
         postService.save(post);
